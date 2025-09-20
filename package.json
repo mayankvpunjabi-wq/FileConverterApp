@@ -1,8 +1,9 @@
 {
   "name": "file-converter-app",
   "version": "1.0.0",
-  "description": "A file converter app using Node.js and Express",
+  "description": "A file converter web app",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js"
   },
@@ -12,8 +13,6 @@
     "form-data": "^4.0.4",
     "multer": "^2.0.2",
     "node-fetch": "^3.3.2"
-  },
-  "engines": {
-    "node": ">=22.16.0"
   }
 }
+
