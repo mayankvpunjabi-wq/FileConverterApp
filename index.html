@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>File Converter App</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f7ff;
+    color: #333;
+    padding: 20px;
+    max-width: 450px;
+    margin: 20px auto;
+    text-align: left;
+  }
+  .app-container {
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 0 20px rgba(0, 82, 204, 0.1);
+    background-color: #fff;
+  }
+  h1 {
+    color: #0052cc;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 28px;
+  }
+  label {
+    font-weight: 700;
+    display: block;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    color: #0052cc;
+  }
+  select, input[type="file"], button {
+    width: 100%;
+    padding: 14px 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1.5px solid #ccc;
+    background-color: #f0f4ff;
+    color: #222;
+    transition: border-color 0.3s ease;
+  }
+  select:hover, input[type="file"]:hover, button:hover {
+    border-color: #0052cc;
+  }
+  button {
+    margin-top: 25px;
+    background-color: #0052cc;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 800;
+    box-shadow: 0 4px 10px rgba(0, 82, 204, 0.3);
+  }
+  button:active {
+    background-color: #003d99;
+    box-shadow: 0 2px 6px rgba(0, 51, 153, 0.4);
+  }
+  .progress-bar {
+    width: 100%;
+    height: 22px;
+    background-color: #e3eaff;
+    margin-top: 25px;
+    border-radius: 12px;
+    overflow: hidden;
+    display: none;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background-color: #4a90e2;
+    transition: width 0.3s ease-in-out;
+  }
+  #result {
+    margin-top: 25px;
+    text-align: center;
+    font-size: 18px;
+  }
+  .error {
+    color: #cc0000;
+    font-weight: 600;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="app-container">
+  <h1>File Converter App</h1>
+
+  <label for="fileInput">Choose File</label>
+  <input type="file" id="fileInput" />
+
+  <label for="convertFrom">From:</label>
+  <select id="convertFrom">
+    <option value="pdf">PDF</option>
+    <option value="txt">Text (TXT)</option>
+    <option value="image">Image (JPG, PNG, GIF)</option>
+  </select>
+
+  <label for="convertTo">To:</label>
+  <select id="convertTo">
+    <option value="pdf">PDF</option>
+    <option value="txt">TXT</option>
+    <option value="image/png">PNG</option>
+    <option value="image/jpeg">JPG</option>
+  </select>
+
+  <button onclick="convertFile()">Convert Now</button>
+
+  <div class="progress-bar" id="progressContainer">
+    <div class="progress-bar-fill" id="progressFill"></div>
+  </div>
+
+  <div id="result"></div>
+</div>
+
+<script>
+const fileInput = document.getElementById("fileInput");
+const convertFrom = document.getElementById("convertFrom");
+const convertTo = document.getElementById("convertTo");
+const progressContainer = document.getElementById("progressContainer");
+const progressFill = document.getElementById("progressFill");
+const result = document.getElementById("result");
+
+async function convertFile() {
+  result.innerHTML = '';
+  progressFill.style.width = '0%';
+  progressContainer.style.display = 'block';
+
+  const file = fileInput.files[0];
+  if (!file) {
+    showError("Please select a file to convert.");
+    return;
+  }
+
+  const fromFormat = convertFrom.value;
+  const toFormat = convertTo.value;
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("fromFormat", fromFormat);
+  formData.append("toFormat", toFormat);
+
+  try {
+    // Simulate progress
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress = Math.min(progress + 10, 90);
+      progressFill.style.width = progress + "%";
+    }, 200);
+
+    const response = await fetch("/convert", {
+      method: "POST",
+      body: formData
+    });
+
+    clearInterval(interval);
+    progressFill.style.width = "100%";
+
+    const data = await response.json();
+
+    if (data.error) {
+      showError(data.error);
+      return;
+    }
+
+    result.innerHTML = `<a href="${data.downloadUrl}" class="download-link" download>Download Converted File</a>`;
+    progressContainer.style.display = 'none';
+  } catch (err) {
+    console.error(err);
+    showError("Conversion failed. Try again.");
+  }
+}
+
+function showError(msg) {
+  result.innerHTML = `<div class="error">${msg}</div>`;
+  progressContainer.style.display = 'none';
+}
+</script>
+</body>
+</html>
